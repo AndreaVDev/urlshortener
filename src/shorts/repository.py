@@ -13,6 +13,10 @@ class LinkRepository(ABC):
     async def get_link(self, short_code: str) -> ShortLink | None:
         pass
 
+    @abstractmethod
+    async def record_click(self, short_code: str) -> None:
+        pass
+
 
 class MongoLinkRepository(LinkRepository):
     def __init__(self, db):
@@ -36,3 +40,9 @@ class MongoLinkRepository(LinkRepository):
                 is_active=record["is_active"],
             )
         return None
+
+    async def record_click(self, short_code: str) -> None:
+        await self.db.update_one(
+            {"short_code": short_code},
+            {"$inc": {"clicks": 1}}
+        )

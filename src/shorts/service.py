@@ -1,8 +1,6 @@
 # Orchestration
-
-from datetime import datetime, timezone
-
 from shorts.domain import ShortLink
+from shorts.exceptions import LinkNotFoundError, ShortCodeGenerationError
 from shorts.repository import LinkRepository
 from shorts.utils import generate_short_code, generate_short_url
 
@@ -29,11 +27,16 @@ class LinkService:
                 short_code=short_code,
                 short_url=generate_short_url(short_code),
             )
-      
         if not short_code_found:
-            raise Exception("Failed to generate a unique short code after multiple attempts.")
+            raise ShortCodeGenerationError("Failed to generate a unique short code after multiple attempts.")
         await self.repository.save(short_link)
         return short_link
 
     async def get_link(self, short_code: str) -> ShortLink | None:
         return await self.repository.get_link(short_code)
+
+    async def record_click(self, short_code: str) -> None:
+        search_existing_short_code = await self.repository.get_link(short_code)
+        if not search_existing_short_code:
+            raise LinkNotFoundError("Link not found")
+        await self.repository.record_click(short_code)

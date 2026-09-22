@@ -1,26 +1,12 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 
-from shorts.schemas import CreateLinkRequest, LinkResponse
-from shorts.service import LinkService
-from shorts.dependencies import get_link_service
+from shorts.router import router
+from shorts.redirect_router import redirect_router
 
 # FastAPI app instantiation, router registration
 
 app = FastAPI()
 
-@app.post("/api/links", response_model=LinkResponse)
-async def create_link(
-    link: CreateLinkRequest,
-    link_service: LinkService = Depends(get_link_service),
-):
-    short_link = await link_service.create_link(link.long_url)
-    return LinkResponse(
-        long_url=short_link.long_url,
-        short_url=short_link.short_url,
-        short_code=short_link.short_code,
-        created_at=short_link.created_at,
-        clicks=short_link.clicks,
-    )
-   
+app.include_router(router, prefix="/api", tags=["shorts"])
 
-    
+app.include_router(redirect_router, tags=["shorts"])
