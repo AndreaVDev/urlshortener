@@ -1,0 +1,13 @@
+name: urlshortener
+
+volumes:
+  mongo_data:
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
